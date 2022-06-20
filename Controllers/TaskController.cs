@@ -1,12 +1,21 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.Sqlite;
+using PomoToDoro.Data;
 using PomoToDoro.Models;
 using PomoToDoro.Models.ViewModels;
+using PomoToDoro.Repositories;
 
 namespace PomoToDoro.Controllers;
 
 public class TaskController : Controller
 {
+    private readonly IRepository _repository;
+
+    public TaskController(IRepository repository)
+    {
+        _repository = repository;
+    }
+
     public ActionResult Index()
     {
         var todoListViewModel = GetAllTasks();
@@ -100,36 +109,35 @@ public class TaskController : Controller
             TaskList = taskList
         };
     }
-    
+
     internal TaskModel GetTaskById(int id)
     {
-        TaskModel taskModel = new();
-
-        using (var con =
-               new SqliteConnection("Data Source=PomoToDoroDB.sqlite"))
-        {
-            using (var tableCmd = con.CreateCommand())
-            {
-                con.Open();
-                tableCmd.CommandText = $"SELECT * FROM Tasks Where TaskId = '{id}'";
-
-                using (var reader = tableCmd.ExecuteReader())
-                {
-                    if (reader.HasRows)
-                    {
-                        reader.Read();
-                        taskModel.TaskId = reader.GetInt32(0);
-                        taskModel.Name = reader.GetString(1);
-                        taskModel.IsDone = reader.GetBoolean(0);
-                    }
-                    else
-                    {
-                        return taskModel;
-                    }
-                };
-            }
-        }
-
+        TaskModel taskModel = _repository.Get(id);
+        
+        //using (var con =
+        //       new SqliteConnection("Data Source=PomoToDoroDB.sqlite"))
+        //{
+        //    using (var tableCmd = con.CreateCommand())
+        //    {
+        //        con.Open();
+        //        tableCmd.CommandText = $"SELECT * FROM Tasks Where TaskId = '{id}'";
+        //        using (var reader = tableCmd.ExecuteReader())
+        //        {
+        //            if (reader.HasRows)
+        //            {
+        //                reader.Read();
+        //                taskModel.TaskId = reader.GetInt32(0);
+        //                taskModel.Name = reader.GetString(1);
+        //                taskModel.IsDone = reader.GetBoolean(0);
+        //            }
+        //            else
+        //            {
+        //                return taskModel;
+        //            }
+        //        };
+        //    }
+        //}
+        
         return taskModel;
     }
 
@@ -164,16 +172,19 @@ public class TaskController : Controller
     [ValidateAntiForgeryToken]
     public ActionResult Delete(int id, TaskModel taskModel)
     {
-        using (SqliteConnection con =
-               new SqliteConnection("Data Source=PomoToDoroDB.sqlite"))
-        {
-            using (var tableCmd = con.CreateCommand())
-            {
-                con.Open();
-                tableCmd.CommandText = $"DELETE from Tasks WHERE TaskId = '{id}'";
-                tableCmd.ExecuteNonQuery();
-            }
-        }
+        _repository.Delete(id);
+        
+        //using (SqliteConnection con =
+        //       new SqliteConnection("Data Source=PomoToDoroDB.sqlite"))
+        //{
+        //    using (var tableCmd = con.CreateCommand())
+        //    {
+        //        con.Open();
+        //        tableCmd.CommandText = $"DELETE from Tasks WHERE TaskId = '{id}'";
+        //        tableCmd.ExecuteNonQuery();
+        //    }
+        //}
+        
         return RedirectToAction(nameof(Index));
     }
     
@@ -187,16 +198,19 @@ public class TaskController : Controller
     [ValidateAntiForgeryToken]
     public ActionResult DeleteDone(int id, TaskModel taskModel)
     {
-        using (SqliteConnection con =
-               new SqliteConnection("Data Source=PomoToDoroDB.sqlite"))
-        {
-            using (var tableCmd = con.CreateCommand())
-            {
-                con.Open();
-                tableCmd.CommandText = $"DELETE from Tasks WHERE TaskId = '{id}'";
-                tableCmd.ExecuteNonQuery();
-            }
-        }
+        _repository.Delete(id);
+        
+        //using (SqliteConnection con =
+        //       new SqliteConnection("Data Source=PomoToDoroDB.sqlite"))
+        //{
+        //    using (var tableCmd = con.CreateCommand())
+        //    {
+        //        con.Open();
+        //        tableCmd.CommandText = $"DELETE from Tasks WHERE TaskId = '{id}'";
+        //        tableCmd.ExecuteNonQuery();
+        //    }
+        //}
+        
         return RedirectToAction(nameof(IndexDone));
     }
     
